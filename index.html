@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hero Lab · 手牌仪表盘</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="static/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">H</span><span>HERO LAB</span></div>
+      <nav class="app-nav" aria-label="主要页面">
+        <button class="nav-button active" type="button" data-view="analysis" aria-selected="true">极速桌德州</button>
+        <button class="nav-button" type="button" data-view="plo" aria-selected="false">极速桌奥马哈</button>
+        <button class="nav-button" type="button" data-view="mtt" aria-selected="false">锦标赛德州</button>
+        <button class="nav-button" type="button" data-view="knowledge" aria-selected="false">策略知识库</button>
+      </nav>
+      <span class="local-badge">仅在本机运行</span>
+    </header>
+
+    <main>
+      <section id="analysis-view" class="app-view">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">RUSH &amp; CASH HOLD'EM</p>
+          <h1>极速桌德州</h1>
+          <p class="subhead">从已接入的 GG Poker 极速桌德州手牌中找共性训练重点；结果按 BB 衡量。奥马哈与锦标赛各自单独成栏。</p>
+        </div>
+        <div class="sync-card">
+          <strong>本地牌谱已接入</strong>
+          <p id="cash-sync-summary">正在读取样本范围…</p>
+          <small>后续你登录 GG 时告诉我“更新牌谱”，我会协助下载并刷新本机分析；此页面无需手动上传 ZIP。</small>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="数据筛选">
+        <label>样本窗口
+          <select id="window-filter">
+            <option value="all">全部历史</option>
+            <option value="1000">最近 1,000 手</option>
+            <option value="2000">最近 2,000 手</option>
+          </select>
+        </label>
+        <label>级别
+          <select id="stake-filter"><option value="">合并所有低额级别</option></select>
+        </label>
+        <label>开始日期
+          <input id="from-filter" type="date">
+        </label>
+        <label>结束日期
+          <input id="to-filter" type="date">
+        </label>
+        <button id="reset-filters" class="quiet-button" type="button">重置筛选</button>
+      </section>
+
+      <section class="training-focus" aria-live="polite">
+        <div>
+          <p class="eyebrow">CURRENT TRAINING FOCUS</p>
+          <h2 id="focus-title">正在计算当前训练焦点…</h2>
+          <p id="focus-detail">训练焦点只用于缩小复盘范围，不会把小样本直接判成 GTO 错误。</p>
+        </div>
+        <button id="focus-link" class="focus-link" type="button" disabled>查看训练报告</button>
+      </section>
+
+      <section class="metrics" aria-live="polite">
+        <article><span>总手数</span><strong id="metric-hands">—</strong></article>
+        <article><span>总盈亏</span><strong id="metric-profit">—</strong></article>
+        <article><span>盈亏 BB</span><strong id="metric-bb">—</strong></article>
+        <article><span>BB / 100</span><strong id="metric-bb100">—</strong></article>
+        <article><span>牌局总抽水</span><strong id="metric-rake">—</strong></article>
+        <article><span>保险净额</span><strong id="metric-insurance">—</strong></article>
+        <article><span>VPIP</span><strong id="metric-vpip">—</strong></article>
+        <article><span>PFR</span><strong id="metric-pfr">—</strong></article>
+        <article><span>3Bet</span><strong id="metric-threebet">—</strong></article>
+        <article><span>WTSD</span><strong id="metric-wtsd">—</strong></article>
+        <article><span>WWSF</span><strong id="metric-wwsf">—</strong></article>
+        <article><span>W$SD</span><strong id="metric-wsd">—</strong></article>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>累计盈亏</h2>
+            <p>单位为 BB；摊牌与非摊牌线以 Hero 是否进入摊牌划分。</p>
+          </div>
+          <div class="legend" aria-label="曲线图例">
+            <span><i class="actual"></i>总盈亏</span>
+            <span><i class="showdown"></i>摊牌盈亏</span>
+            <span><i class="non-showdown"></i>非摊牌盈亏</span>
+          </div>
+        </div>
+        <div id="chart-empty" class="empty-chart">接入 GG Poker 手牌后，这里会显示累计曲线。</div>
+        <svg id="profit-chart" viewBox="0 0 920 360" role="img" aria-label="累计盈亏曲线"></svg>
+      </section>
+
+      <section class="panel position-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>位置表现</h2>
+            <p>6-max 牌局按按钮位推导；非满员桌保留座位号。RFI 含自动弃牌，不能当作手动选择的开池率。</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>位置</th><th>手数</th><th>盈亏 BB</th><th>BB/100</th><th>VPIP</th><th>PFR</th><th>RFI</th><th>RFI 机会</th><th>3Bet</th></tr></thead>
+            <tbody id="position-body"><tr><td class="empty-row" colspan="9">暂无数据</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel study-unit cash-review" id="cash-study" aria-label="极速桌德州学习单元">
+        <p class="study-loading">正在核对全部手牌与可回看底牌的样本范围…</p>
+      </section>
+
+      <section class="panel range-cache" id="range-cache" aria-label="本地 GTO 范围库">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">LOCAL STUDY CACHE</p>
+            <h2>本地 GTO 范围库</h2>
+            <p>只保存你从官网手动复制的翻前范围。先覆盖四个高频节点；模型不匹配时不当作 GG 精确解。</p>
+          </div>
+          <span class="range-cache-count" id="range-count">0 份范围</span>
+        </div>
+        <div class="range-cache-layout">
+          <form id="range-form" class="range-form">
+            <div class="range-form-fields">
+              <label>位置节点
+                <select id="range-scenario" required>
+                  <option value="SB_BTN">SB 对 BTN 开池</option>
+                  <option value="SB_CO">SB 对 CO 开池</option>
+                  <option value="HJ_UTG">HJ 对 UTG 开池</option>
+                  <option value="CO_UTG">CO 对 UTG 开池</option>
+                </select>
+              </label>
+              <label>复制的范围
+                <select id="range-action" required>
+                  <option value="hero_3bet">Hero 3-bet 范围</option>
+                  <option value="hero_call">Hero 跟注范围</option>
+                  <option value="hero_fold">Hero 弃牌范围</option>
+                  <option value="hero_all">Hero 全范围</option>
+                  <option value="opener_open">对手开池范围</option>
+                </select>
+              </label>
+              <label>求解器有效筹码 BB<input id="range-stack" type="number" min="10" max="250" step="1" value="100" required></label>
+              <label>求解器开池 BB<input id="range-open" type="number" min="1.5" max="5" step="0.01" value="2.5" required></label>
+              <label>求解抽水模型
+                <select id="range-rake" required>
+                  <option value="microstakes">微额抽水</option>
+                  <option value="chip_ev">无抽水 chipEV</option>
+                </select>
+              </label>
+              <label>来源链接（可选）<input id="range-source" type="url" placeholder="https://app.gtowizard.com/..."></label>
+            </div>
+            <label class="range-text-label">官网复制的范围文本
+              <textarea id="range-text" rows="5" maxlength="20000" placeholder="在 GTO Wizard 的 Ranges 页选中对应动作后，点复制，再粘贴到这里。" required></textarea>
+            </label>
+            <div class="range-form-actions">
+              <button type="submit">保存到本机</button>
+              <span id="range-status" role="status">尚未保存范围；不要粘贴完整牌谱或账号信息。</span>
+            </div>
+          </form>
+          <div class="range-cache-results">
+            <h3>已保存的范围</h3>
+            <div id="range-list" class="range-list">正在读取本地范围…</div>
+          </div>
+        </div>
+        <p class="range-cache-note">仅供离桌复盘。原始复制文本尚不等于逐手动作频率或 EV；等取得第一份真实样本后再做解析与牌例对照。</p>
+      </section>
+
+      <aside class="method-note">
+        <strong>当前基线的边界</strong>
+        <span>GG 导出文本未标记自动弃牌，因此低开池率和边缘牌弃牌不能直接判成手动策略错误。本轮“冷跟”统计只用可验证的主动跟注/3-bet；理论建议不是逐手 solver 判决。“牌局总抽水”并非玩家归因抽水；翻后节点和 All-in EV 仍缺可靠基线。</span>
+      </aside>
+      </section>
+
+      <section id="plo-view" class="app-view" hidden>
+        <section class="intro">
+          <div>
+            <p class="eyebrow">RUSH &amp; CASH POT LIMIT OMAHA</p>
+            <h1>极速桌奥马哈</h1>
+            <p class="subhead">单独存放和统计，不与德州手数、BB/100 或位置数据混合。样本还小，只看可复核的翻前行动习惯。</p>
+          </div>
+          <div class="sync-card">
+            <strong>奥马哈牌谱已接入</strong>
+            <p id="plo-sync-summary">正在读取样本范围…</p>
+            <small>后续导出新的极速桌奥马哈 ZIP 后告诉我，会按手牌 ID 去重更新；页面没有上传入口。</small>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="奥马哈概览">
+          <article><span>总手数</span><strong id="plo-hands">—</strong></article>
+          <article><span>盈亏 BB</span><strong id="plo-net-bb">—</strong></article>
+          <article><span>BB / 100 · 样本过小</span><strong id="plo-bb100">—</strong></article>
+          <article><span>VPIP</span><strong id="plo-vpip">—</strong></article>
+          <article><span>PFR</span><strong id="plo-pfr">—</strong></article>
+          <article><span>3Bet</span><strong id="plo-threebet">—</strong></article>
+        </section>
+
+        <section class="panel study-unit" id="plo-study" aria-label="极速桌奥马哈学习单元">
+          <p class="study-loading">正在读取奥马哈样本…</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading"><div><h2>位置表现</h2><p>RFI 指前面无人入池时加注开池；弃牌含自动弃牌，不能当作手动选择的开池率。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>位置</th><th>手数</th><th>盈亏 BB</th><th>VPIP</th><th>PFR</th><th>RFI</th><th>RFI 机会</th><th>平跟入池</th></tr></thead><tbody id="plo-position-body"></tbody></table></div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><div><h2>起手牌结构</h2><p>按 4 张底牌的同花、对子和连接程度分组：发到多少次、其中入池（VPIP）和加注（PFR）的比例。用来检查你是否按结构选牌。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>分组</th><th>结构</th><th>发到</th><th>VPIP</th><th>PFR</th></tr></thead><tbody id="plo-structure-body"></tbody></table></div>
+        </section>
+        <aside class="method-note">
+          <strong>奥马哈数据边界</strong>
+          <span id="plo-boundary">GG 导出文本不标记自动弃牌；理论部分为通用 PLO 原则，不是 solver 结论，也尚无已核验的 PLO 知识卡。</span>
+        </aside>
+      </section>
+
+      <section id="mtt-view" class="app-view" hidden>
+        <section class="intro">
+          <div>
+            <p class="eyebrow">TOURNAMENT HOLD'EM</p>
+            <h1>锦标赛德州</h1>
+            <p class="subhead">赛事成绩与逐手行动分开统计；不与现金桌混合。人民币赛事按固定汇率折算为美元合并计算。锦标赛奥马哈手牌暂不导入。</p>
+          </div>
+          <div class="sync-card">
+            <strong>锦标赛数据已接入</strong>
+            <p id="mtt-sync-summary">正在读取样本范围…</p>
+            <small>后续登录 GG 时告诉我更新；赛事和逐手记录会分别去重，不与现金桌混合。</small>
+          </div>
+        </section>
+
+        <div id="mtt-coverage" class="mtt-coverage">正在读取锦标赛样本范围…</div>
+        <section class="metrics mtt-metrics" aria-label="锦标赛成绩（人民币折算为美元）">
+          <article><span>付费德州赛事 · 人民币已折算</span><strong id="mtt-events">—</strong></article>
+          <article><span>含再买入的参赛次数</span><strong id="mtt-entries">—</strong></article>
+          <article><span>总投入</span><strong id="mtt-buyin">—</strong></article>
+          <article><span>总回收</span><strong id="mtt-reward">—</strong></article>
+          <article><span>净成绩</span><strong id="mtt-net">—</strong></article>
+          <article><span>ROI</span><strong id="mtt-roi">—</strong></article>
+        </section>
+
+        <section class="training-focus mtt-focus">
+          <div>
+            <p class="eyebrow">REVIEW PRIORITY</p>
+            <h2 id="mtt-focus-title">正在核对赛制差异…</h2>
+            <p id="mtt-focus-detail">锦标赛收益波动很大；赛制分组是复盘线索，不是技术错误判决。</p>
+          </div>
+        </section>
+
+        <section class="panel study-unit" id="mtt-study" aria-label="锦标赛德州学习单元">
+          <p class="study-loading">正在读取锦标赛样本…</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading"><div><h2>面对单次开池（非全下）的首个决定</h2><p>只统计 Hero 第一次行动前恰好有一次非全下加注的手牌；“前中位”指 UTG 到 CO。赏金赛中的跟注单独计数。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>赛制</th><th>起始筹码</th><th>位置</th><th>次数</th><th>弃牌</th><th>跟注</th><th>3-bet</th><th>全下</th><th>其中赏金赛跟注</th></tr></thead><tbody id="mtt-cold-body"></tbody></table></div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><div><h2>赛制分组</h2><p>10BB 指赛事名称标记 [10 BB]；其他赛制单列。奖金和再买入均计入。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>赛制</th><th>赛事</th><th>参赛次数</th><th>投入</th><th>回收</th><th>净成绩</th><th>ROI</th></tr></thead><tbody id="mtt-format-body"></tbody></table></div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><div><h2>2026 年逐月赛事成绩</h2><p id="mtt-month-note">人民币赛事按固定汇率折算为美元后合并；免费赛与非现金奖励不折成收益。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>月份</th><th>赛事</th><th>投入</th><th>回收</th><th>净成绩</th><th>ROI</th></tr></thead><tbody id="mtt-month-body"></tbody></table></div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><div><h2>逐手行动 · 起始筹码分组</h2><p>只含最近可下载的德州扑克牌谱；以本手开始时 Hero 筹码 ÷ 大盲分组。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>起始筹码</th><th>手数</th><th>VPIP</th><th>PFR</th><th>RFI</th><th>RFI 机会</th><th>3Bet</th></tr></thead><tbody id="mtt-stack-body"></tbody></table></div>
+        </section>
+        <aside class="method-note">
+          <strong>锦标赛数据边界</strong>
+          <span id="mtt-boundary">赛事概括与逐手牌谱的时间窗口不同；未完成赛事、卫星赛、免费赛及筹码/门票奖励不进入现金 ROI。仅凭行动频率无法判断 ICM、赏金或有效筹码下的最优决策。</span>
+        </aside>
+      </section>
+
+      <section id="knowledge-view" class="app-view knowledge-view" hidden>
+        <header class="knowledge-masthead">
+          <div>
+            <p class="eyebrow">SOURCE-TRACEABLE STUDY LIBRARY</p>
+            <h1>策略知识库</h1>
+            <p class="subhead">只收录官方公开免费内容；CASH 与 MTT 永不混用，每张结论都能回到原始来源。</p>
+          </div>
+          <div class="knowledge-tally" aria-live="polite">
+            <span><strong id="knowledge-card-count">—</strong> 已核验知识卡</span>
+            <span><strong id="knowledge-pending-count">—</strong> 待精读来源</span>
+          </div>
+          <div class="knowledge-actions">
+            <button id="knowledge-refresh" class="quiet-button" type="button">立即检查来源</button>
+            <span id="knowledge-refresh-status" aria-live="polite">每 7 天检查一次官方公开来源</span>
+          </div>
+        </header>
+
+        <nav class="knowledge-tabs" aria-label="知识库页面">
+          <button class="knowledge-tab active" type="button" data-kpage="library" aria-selected="true">策略知识卡</button>
+          <button class="knowledge-tab" type="button" data-kpage="plo-textbook" aria-selected="false">奥马哈教材</button>
+        </nav>
+
+        <div id="knowledge-library">
+
+        <section class="domain-switch" aria-label="牌局类型">
+          <button class="domain-button active" type="button" data-domain="CASH" aria-pressed="true">
+            <span>CASH</span>
+            <small>现金桌</small>
+          </button>
+          <button class="domain-button" type="button" data-domain="MTT" aria-pressed="false">
+            <span>MTT</span>
+            <small>锦标赛</small>
+          </button>
+          <p>当前只检索所选类型，避免把锦标赛短码策略套进 100BB 现金桌。</p>
+        </section>
+
+        <section class="knowledge-toolbar" aria-label="知识库筛选">
+          <label>作者
+            <select id="knowledge-creator"><option value="">全部作者</option></select>
+          </label>
+          <label>主题
+            <select id="knowledge-topic">
+              <option value="">全部主题</option>
+              <option value="preflop.rfi.btn">BTN RFI</option>
+              <option value="preflop.cold_call.sb">小盲面对开池</option>
+              <option value="preflop.cold_call.middle">HJ/CO 面对开池</option>
+              <option value="study.gg.rnc.preflop">GG 极速桌模型选择</option>
+              <option value="preflop.push_fold.setup">Push/Fold 设置</option>
+              <option value="study.hrc.viewer">HRC Viewer</option>
+              <option value="study.hrc.postflop">HRC 翻后入门</option>
+            </select>
+          </label>
+          <label class="knowledge-search">搜索
+            <input id="knowledge-query" type="search" placeholder="标题、标签或作者">
+          </label>
+          <button id="knowledge-search-button" type="button">检索</button>
+          <button id="knowledge-reset" class="quiet-button" type="button">清除条件</button>
+        </section>
+
+        <p id="knowledge-status" class="knowledge-status" aria-live="polite">正在读取本地知识库…</p>
+        <section id="knowledge-cards" class="knowledge-grid" aria-label="已核验知识卡"></section>
+
+        <section class="pending-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">REVIEW QUEUE</p>
+              <h2>待精读来源</h2>
+              <p>已确认公开、免费和发布主体，但尚未逐段提取；不会提前生成策略结论。</p>
+            </div>
+          </div>
+          <div id="pending-sources" class="pending-list"></div>
+        </section>
+
+        <aside class="method-note knowledge-policy">
+          <strong>来源规则</strong>
+          <span>转载、付费课程和无法确认发布主体的内容不会进入知识卡。知识卡保留牌局类型、位置、筹码深度、适用假设与原始链接；视频全文与付费内容不会保存在本地。</span>
+        </aside>
+        </div>
+
+        <div id="plo-textbook" class="textbook" hidden>
+          <p class="study-loading">正在读取奥马哈教材…</p>
+        </div>
+      </section>
+    </main>
+    <script src="static/static-api.js"></script>
+    <script src="static/app.js"></script>
+    <script src="static/plo-classifier.js"></script>
+    <script src="static/plo-textbook.js"></script>
+  </body>
+</html>
