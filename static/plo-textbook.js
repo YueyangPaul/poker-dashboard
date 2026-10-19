@@ -1,5 +1,7 @@
 // Omaha textbook sub-page of the knowledge view: content comes from /api/plo-textbook, live numbers from /api/plo.
 (function () {
+  // A standalone page sets window.PLO_TEXTBOOK = { dataUrl, standalone: true } and has no personal data.
+  const config = Object.assign({ dataUrl: "/api/plo-textbook", standalone: false }, window.PLO_TEXTBOOK || {});
   const root = document.querySelector("#plo-textbook");
   const library = document.querySelector("#knowledge-library");
   const tabs = document.querySelectorAll(".knowledge-tab");
@@ -279,6 +281,10 @@
   }
 
   function appendixWidget() {
+    const verifyList = el("ul", { class: "tb-points" }, state.book.verify.map((item) => el("li", {}, [verifyBadge(), " ", item.text, " ", refChip(item.ref)])));
+    if (config.standalone) {
+      return [sectionBlock(`待核对条目（${state.book.verify.length}）`, verifyList), sectionBlock("视频清单", videoTable())];
+    }
     const mine = el("div", { class: "tb-mydata" }, el("p", { class: "tb-muted", text: "正在读取你的奥马哈数据…" }));
     fetch("/api/plo").then((response) => response.json()).then((data) => {
       const number = (value) => Number(value).toLocaleString("zh-CN");
@@ -297,8 +303,11 @@
         el("tbody", {}, rows.map((row) => el("tr", {}, row.map((text) => el("td", { text }))))),
       ])));
     }).catch(() => mine.replaceChildren(el("p", { class: "tb-warn", text: "无法读取 /api/plo；在本机服务上打开页面才有个人数据。" })));
-    const verify = el("ul", { class: "tb-points" }, state.book.verify.map((item) => el("li", {}, [verifyBadge(), " ", item.text, " ", refChip(item.ref)])));
-    const videos = el("div", { class: "table-wrap" }, el("table", { class: "tb-videos" }, [
+    return [sectionBlock("你的奥马哈数据 × 教材", mine, "tb-widget"), sectionBlock(`待核对条目（${state.book.verify.length}）`, verifyList), sectionBlock("视频清单", videoTable())];
+  }
+
+  function videoTable() {
+    return el("div", { class: "table-wrap" }, el("table", { class: "tb-videos" }, [
       el("thead", {}, el("tr", {}, ["编号", "系列", "标题", "发布", "时长", "来源"].map((text) => el("th", { text })))),
       el("tbody", {}, state.book.videos.map((video) => el("tr", {}, [
         el("td", { text: video.id }), el("td", { text: video.series }),
@@ -306,7 +315,6 @@
         el("td", { text: video.date }), el("td", { text: video.duration }), el("td", { text: video.source }),
       ]))),
     ]));
-    return [sectionBlock("你的奥马哈数据 × 教材", mine, "tb-widget"), sectionBlock(`待核对条目（${state.book.verify.length}）`, verify), sectionBlock("视频清单", videos)];
   }
 
   const WIDGETS = { classifier: classifierWidget, ranges: rangesWidget, positions: positionsWidget, flop: flopWidget, bubble: bubbleWidget, drills: drillsWidget, appendix: appendixWidget };
@@ -331,7 +339,7 @@
     const content = el("article", { class: "tb-content panel" }, [
       el("p", { class: "eyebrow", text: `CHAPTER ${String(index).padStart(2, "0")} / ${String(chapters.length - 1).padStart(2, "0")}` }),
       el("h2", { text: chapter.title }),
-      chapter.intro ? el("p", { class: "tb-intro", text: chapter.intro }) : null,
+      chapter.intro ? el("p", { class: "tb-intro", text: config.standalone && chapter.id === "appendix" ? "待核对条目和视频清单。" : chapter.intro }) : null,
     ]);
     if (chapter.widget && WIDGETS[chapter.widget]) {
       const widget = WIDGETS[chapter.widget]();
@@ -361,7 +369,7 @@
   async function load() {
     if (state.book) return;
     try {
-      const response = await fetch("/api/plo-textbook");
+      const response = await fetch(config.dataUrl);
       if (!response.ok) throw new Error("无法读取奥马哈教材");
       state.book = await response.json();
       render();
@@ -383,6 +391,10 @@
     if (location.hash !== (textbook ? "#plo-textbook" : "")) history.replaceState(null, "", textbook ? "#plo-textbook" : location.pathname);
   }
 
+  if (config.standalone) {
+    load();
+    return;
+  }
   tabs.forEach((tab) => tab.addEventListener("click", () => showPage(tab.dataset.kpage)));
   if (location.hash === "#plo-textbook") {
     if (typeof switchView === "function") switchView("knowledge");
