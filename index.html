@@ -188,6 +188,12 @@
           </div>
         </section>
 
+        <nav class="knowledge-tabs" aria-label="奥马哈页面">
+          <button class="knowledge-tab plo-tab active" type="button" data-plopage="overview" aria-selected="true">数据总览</button>
+          <button class="knowledge-tab plo-tab" type="button" data-plopage="review" aria-selected="false">错误复盘</button>
+        </nav>
+
+        <div id="plo-overview">
         <section class="metrics" aria-label="奥马哈概览">
           <article><span>总手数</span><strong id="plo-hands">—</strong></article>
           <article><span>盈亏 BB</span><strong id="plo-net-bb">—</strong></article>
@@ -213,6 +219,11 @@
           <strong>奥马哈数据边界</strong>
           <span id="plo-boundary">GG 导出文本不标记自动弃牌；理论部分为通用 PLO 原则，不是 solver 结论，也尚无已核验的 PLO 知识卡。</span>
         </aside>
+        </div>
+
+        <div id="plo-review" class="textbook" hidden>
+          <p class="study-loading">正在读取复盘案例…</p>
+        </div>
       </section>
 
       <section id="mtt-view" class="app-view" hidden>
@@ -361,5 +372,6 @@
     <script src="static/app.js"></script>
     <script src="static/plo-classifier.js"></script>
     <script src="static/plo-textbook.js"></script>
+    <script src="static/plo-review.js"></script>
   </body>
 </html>
