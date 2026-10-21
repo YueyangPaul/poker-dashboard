@@ -135,7 +135,8 @@ function renderChart(points) {
   }
   elements.chart.classList.add("visible");
   elements.chartEmpty.hidden = true;
-  const width = 920, height = 360, left = 66, right = 26, top = 22, bottom = 48;
+  const compact = window.matchMedia("(max-width: 560px)").matches;
+  const width = 920, height = 360, left = compact ? 150 : 66, right = 26, top = 22, bottom = compact ? 70 : 48;
   const values = points.flatMap((point) => [point.net_bb, point.showdown_bb, point.non_showdown_bb]);
   let low = Math.min(0, ...values), high = Math.max(0, ...values);
   const spread = Math.max(1, high - low);
