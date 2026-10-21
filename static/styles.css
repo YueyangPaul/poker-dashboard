@@ -515,3 +515,4 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .rv-archive-item, .rv-case, .rv-session { min-width: 0; }
 @media (max-width: 900px) { .rv-grid { grid-template-columns: minmax(0, 1fr); } .rv-compare { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .rv-archive-item[open] > .rv-grid, .rv-archive-item[open] > .rv-session { margin: 0 .5rem .8rem; } .rv-archive-item > summary { padding: .7rem .8rem; font-size: .74rem; } }
+span.nav-button { display: flex; align-items: center; }
