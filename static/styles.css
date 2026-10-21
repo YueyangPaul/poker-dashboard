@@ -516,3 +516,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media (max-width: 900px) { .rv-grid { grid-template-columns: minmax(0, 1fr); } .rv-compare { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .rv-archive-item[open] > .rv-grid, .rv-archive-item[open] > .rv-session { margin: 0 .5rem .8rem; } .rv-archive-item > summary { padding: .7rem .8rem; font-size: .74rem; } }
 span.nav-button { display: flex; align-items: center; }
+@media (max-width: 560px) {
+  button, select, input[type="text"], input[type="date"], input[type="search"], input[type="number"], input[type="url"] { min-height: 40px; }
+  .toolbar label, .knowledge-toolbar label { font-size: .7rem; }
+  .tb-chip { min-height: 34px; padding: .3rem .65rem; }
+  .tb-ref { padding: .15rem .55rem; font-size: .7rem; line-height: 1.6; }
+  .tb-heat { min-height: 36px; }
+  .nav-button, .knowledge-tab { min-height: 44px; }
+  details > summary { min-height: 40px; }
+}

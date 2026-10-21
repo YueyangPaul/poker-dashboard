@@ -61,7 +61,7 @@
       el("p", { class: "tb-intro", text: session.summary }),
       el("div", { class: "rv-stats" }, [
         el("span", {}, ["手数 ", el("strong", { text: stats.hands.toLocaleString("zh-CN") })]),
-        el("span", {}, ["盈亏 ", el("strong", { class: stats.net_bb < 0 ? "negative" : "positive", text: signedBb(stats.net_bb) })]),
+        el("span", {}, ["盈亏 ", el("strong", { class: stats.net_bb < 0 ? "negative" : "positive", text: `${signedBb(stats.net_bb)}（${stats.net_usd < 0 ? "−" : "+"}$${Math.abs(stats.net_usd).toFixed(2)}）` })]),
         el("span", {}, ["VPIP ", el("strong", { text: `${stats.vpip ?? "—"}%` })]),
         el("span", {}, ["PFR ", el("strong", { text: `${stats.pfr ?? "—"}%` })]),
         el("span", {}, ["复盘案例 ", el("strong", { text: counts })]),
