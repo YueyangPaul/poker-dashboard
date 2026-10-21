@@ -673,7 +673,7 @@ function renderPlo(data) {
       ["手数", `${number(coverage.hands)} 手，按手牌 ID 去重；单独存放，不计入德州统计`],
       ["日期", dateRange(coverage.first, coverage.last)],
       ["级别", stakes || "—"],
-      ["自动弃牌", "导出文本不标记自动弃牌；弃牌次数含自动与手动，所以只评价确实入池的动作（平跟、跟注、3-bet）。"],
+      ["弃牌", "极速桌奥马哈没有自动弃牌，弃牌和开池率都按主动决定评价。"],
       ["结果指标", `${data.sample_warning} 当前 BB/100 为 ${signed(summary.bb_per_100, "")}，只作记录。`],
     ],
     examples: data.examples,
@@ -687,7 +687,7 @@ function renderPlo(data) {
     better: [
       ["优先 01", "BB 面对单次开池：顶级结构就 3-bet", `本样本 3-bet ${bigBlind.raises}/${bigBlind.spots} 次；AA/KK/A 双同花中 ${premium.calls} 次只跟注。`, "AA（尤其带同花或连张）、带好边牌的 KK、A 高的双同花连张默认 3-bet；中等结构可以跟；彩虹、不连接的边缘牌更多弃牌。"],
       ["优先 02", "SB 无人入池：加注或弃牌", `平跟 ${sb.calls} 次，加注 ${sb.raises} 次。`, "T98x、带同花的连张这类可玩牌直接加注；4-3-2 加孤张这类零散低牌直接弃，不平跟。"],
-      ["证据边界", "小样本只看行动习惯", `只有 ${number(coverage.hands)} 手；BTN 开池率 ${percent(positions.BTN?.rfi)} 含自动弃牌，不据此判断开池过紧。`, "下一批牌谱先验收两件事：BB 面对开池的 3-bet 次数是否上升，SB 平跟是否接近零。"],
+      ["证据边界", "小样本只看行动习惯", `只有 ${number(coverage.hands)} 手；BTN 开池率 ${percent(positions.BTN?.rfi)}，教材常规桌约 49%，后位开池偏紧也是要改的地方。`, "下一批牌谱先验收两件事：BB 面对开池的 3-bet 次数是否上升，SB 平跟是否接近零。"],
     ],
     drills: [
       ["BB · A♥A♣T♠5♦ vs HJ", "HJ（32BB）开池到 3.4BB，其余人都弃牌。你在 BB 用彩虹 AA，怎么打？", "3-bet（约底池）。AA 翻前领先最多，对手只有 32BB，3-bet 后 SPR 很低，多数翻牌可以直接打光，避免没有位置时的多轮难决定。"],

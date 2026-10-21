@@ -296,7 +296,7 @@
         ["小盲无人入池", `加注 ${sb.raises}、平跟 ${sb.calls}、弃牌 ${sb.folds}（共 ${sb.spots} 次）`, "教材：常规桌只有满池开池或弃牌，不 limp"],
         ["大盲面对单次开池", `3-bet ${bb.raises}/${bb.spots}（${pct(bb.raise_rate)}），跟注 ${bb.calls}，弃牌 ${bb.folds}`, "教材：BB 对 BTN 约 37% 防守、其中 9.5% 3-bet；没位置时 3-bet 用线性范围"],
         ["顶级结构在 BB", `AA/KK/A 双同花 ${data.bb_premium_vs_raise.spots} 次，3-bet ${data.bb_premium_vs_raise.raises} 次`, "教材：AA 在必定 3-bet 列表里（差彩虹 AA 除外）"],
-        ["各位置开池（RFI）", Object.entries(data.positions).filter(([, row]) => row.rfi !== null).map(([position, row]) => `${position} ${pct(row.rfi)}`).join(" · "), "教材常规桌：UTG 18 · MP 23 · CO 31 · BTN 49 · SB 38；弃牌含自动弃牌"],
+        ["各位置开池（RFI）", Object.entries(data.positions).filter(([, row]) => row.rfi !== null).map(([position, row]) => `${position} ${pct(row.rfi)}`).join(" · "), "教材常规桌：UTG 18 · MP 23 · CO 31 · BTN 49 · SB 38"],
       ];
       mine.replaceChildren(el("div", { class: "table-wrap" }, el("table", { class: "tb-compare" }, [
         el("thead", {}, el("tr", {}, ["项目", "你的数据", "对照教材"].map((text) => el("th", { text })))),

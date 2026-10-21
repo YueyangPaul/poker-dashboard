@@ -5,7 +5,7 @@
   const tabs = document.querySelectorAll(".plo-tab");
   const KINDS = { error: "错误", leak: "漏洞", cooler: "撞牌 · 打法正确", good: "正例" };
   const SUITS = { s: "♠", h: "♥", d: "♦", c: "♣" };
-  const state = { data: null, kind: "all", session: null };
+  const state = { data: null, kind: "all", page: "current" };
 
   function el(tag, attributes = {}, children = []) {
     const node = document.createElement(tag);
@@ -40,7 +40,7 @@
     return `${value > 0 ? "+" : ""}${Number(value).toLocaleString("en-US", { maximumFractionDigits: 2 })} BB`;
   }
 
-  function sessionBlock(session) {
+  function sessionBlock(session, extra = null) {
     const stats = session.stats;
     const cases = state.data.cases.filter((item) => item.session === session.id);
     const counts = Object.keys(KINDS).map((kind) => `${KINDS[kind]} ${cases.filter((item) => item.kind === kind).length}`).join(" · ");
@@ -68,12 +68,13 @@
       ]),
       el("section", { class: "tb-block" }, [
         el("h3", { text: "无人入池时的开池率 · 对照教材" }),
-        el("p", { class: "tb-muted", text: "绿色条是你这一场的开池率，橙色竖线是教材的常规桌比例。GG 导出不区分快速弃牌，样本也很小，只作提醒。" }),
+        el("p", { class: "tb-muted", text: "绿色条是你这一场的开池率，橙色竖线是教材的常规桌比例；相差 10 个百分点以上标橙色。" }),
         el("div", { class: "table-wrap" }, el("table", { class: "rv-rfi" }, [
           el("thead", {}, el("tr", {}, ["位置", "开池/机会", "", "你", "教材", "平跟入池"].map((text) => el("th", { text })))),
           el("tbody", {}, rfiRows),
         ])),
       ]),
+      extra,
       el("section", { class: "tb-block" }, [
         el("h3", { text: "这一场的规律" }),
         el("ul", { class: "tb-points" }, session.patterns.map((pattern) => el("li", {}, [el("strong", { text: `${pattern.title}：` }), pattern.detail, " ", ...(pattern.refs || []).map(refChip)]))),
@@ -100,23 +101,80 @@
     ]);
   }
 
-  function render() {
-    const { data } = state;
+  function comparisonBlock(session) {
+    const comparison = session.comparison;
+    if (!comparison) return null;
+    const previous = state.data.sessions.find((item) => item.id === comparison.vs);
+    const column = (title, cls, items) => el("div", { class: `rv-compare-col ${cls}` }, [
+      el("h4", { text: `${title}（${items.length}）` }),
+      el("ul", {}, items.map((item) => el("li", {}, [el("strong", { text: item.title }), el("p", { text: item.detail })]))),
+    ]);
+    const rows = previous ? session.stats.rfi.map((row) => {
+      const old = previous.stats.rfi.find((item) => item.position === row.position) || {};
+      const moved = row.rate !== null && old.rate !== null && old.rate !== undefined
+        ? Math.abs(row.textbook - row.rate) < Math.abs(row.textbook - old.rate) ? "rv-better-text" : Math.abs(row.textbook - row.rate) > Math.abs(row.textbook - old.rate) ? "rv-off" : "" : "";
+      return el("tr", {}, [el("td", { text: row.position }), el("td", { text: old.rate === null || old.rate === undefined ? "—" : `${old.rate}%` }), el("td", { class: moved, text: row.rate === null ? "—" : `${row.rate}%` }), el("td", { text: `${row.textbook}%` })]);
+    }) : [];
+    return el("section", { class: "tb-block" }, [
+      el("h3", { text: `和上一场（${previous ? previous.title : comparison.vs}）相比` }),
+      el("div", { class: "rv-compare" }, [column("进步了", "rv-improved", comparison.improved), column("还没改", "rv-unchanged", comparison.unchanged), column("新出现的问题", "rv-new", comparison.new || [])]),
+      rows.length ? el("div", { class: "table-wrap" }, el("table", { class: "rv-rfi-compare" }, [
+        el("thead", {}, el("tr", {}, ["开池率", "上一场", "这一场", "教材"].map((text) => el("th", { text })))),
+        el("tbody", {}, rows),
+      ])) : null,
+    ]);
+  }
+
+  function casesBlock(sessionId) {
+    const all = state.data.cases.filter((item) => item.session === sessionId);
     const filters = [["all", "全部"], ...Object.entries(KINDS)];
-    const cases = data.cases.filter((item) => state.kind === "all" || item.kind === state.kind);
+    const cases = all.filter((item) => state.kind === "all" || item.kind === state.kind);
     const order = { error: 0, leak: 1, cooler: 2, good: 3 };
     cases.sort((a, b) => order[a.kind] - order[b.kind] || a.net_bb - b.net_bb);
-    root.replaceChildren(
-      el("header", { class: "tb-header" }, [
-        el("div", {}, [el("p", { class: "eyebrow", text: "PLO MISTAKE LOG" }), el("h2", { text: "奥马哈错误复盘" }), el("p", { class: "subhead", text: "按摆教练的教材逐手核对的案例；每条都附教材出处。" })]),
-        el("p", { class: "tb-disclaimer" }, ["只记录我逐手看过的牌例，不按输赢判对错：撞牌输掉但打法正确的也列出来作对照。", " ", el("a", { href: "#plo-textbook", onclick: (event) => { event.preventDefault(); openTextbook(); } }, "打开奥马哈教材 →")]),
-      ]),
-      ...data.sessions.map(sessionBlock),
+    return [
       el("div", { class: "tb-segment rv-filters" }, filters.map(([kind, label]) => el("button", {
         type: "button", class: state.kind === kind ? "active" : "", "aria-pressed": String(state.kind === kind),
         onclick: () => { state.kind = kind; render(); },
-      }, `${label}（${kind === "all" ? data.cases.length : data.cases.filter((item) => item.kind === kind).length}）`))),
+      }, `${label}（${kind === "all" ? all.length : all.filter((item) => item.kind === kind).length}）`))),
       cases.length ? el("div", { class: "rv-grid" }, cases.map(caseCard)) : el("p", { class: "tb-muted", text: "这一类还没有案例。" }),
+    ];
+  }
+
+  function archiveBlock(sessions) {
+    if (!sessions.length) return el("p", { class: "tb-muted", text: "还没有更早的场次。" });
+    return el("div", { class: "rv-archive" }, sessions.slice().reverse().map((session) => {
+      const cases = state.data.cases.filter((item) => item.session === session.id);
+      const errors = cases.filter((item) => item.kind === "error").length;
+      const leaks = cases.filter((item) => item.kind === "leak").length;
+      const details = el("details", { class: "rv-archive-item" }, [
+        el("summary", {}, [el("strong", { text: session.title }), ` · ${session.stats.hands.toLocaleString("zh-CN")} 手 · ${signedBb(session.stats.net_bb)} · 错误 ${errors} · 漏洞 ${leaks}（点开查看）`]),
+      ]);
+      details.addEventListener("toggle", () => {
+        if (details.open && details.children.length === 1) {
+          details.append(sessionBlock(session), el("div", { class: "rv-grid" }, cases.slice().sort((a, b) => a.net_bb - b.net_bb).map(caseCard)));
+        }
+      });
+      return details;
+    }));
+  }
+
+  function render() {
+    const { data } = state;
+    const latest = data.sessions[data.sessions.length - 1];
+    const earlier = data.sessions.slice(0, -1);
+    const pages = [["current", `本场复盘${latest ? ` · ${latest.title}` : ""}`], ["history", `历史场次（${earlier.length}）`]];
+    const body = state.page === "history" ? [archiveBlock(earlier)]
+      : latest ? [sessionBlock(latest, comparisonBlock(latest)), ...casesBlock(latest.id)] : [el("p", { class: "tb-muted", text: "还没有复盘场次。" })];
+    root.replaceChildren(
+      el("header", { class: "tb-header" }, [
+        el("div", {}, [el("p", { class: "eyebrow", text: "PLO MISTAKE LOG" }), el("h2", { text: "奥马哈错误复盘" }), el("p", { class: "subhead", text: "按摆教练的教材逐手核对的案例；每条都附教材出处。" })]),
+        el("p", { class: "tb-disclaimer" }, ["只记录我逐手看过的牌例，不按输赢判对错：没到摊牌、但明显违背教材的也会列出来；撞牌输掉但打法正确的列作对照。", " ", el("a", { href: "#plo-textbook", onclick: (event) => { event.preventDefault(); openTextbook(); } }, "打开奥马哈教材 →")]),
+      ]),
+      el("div", { class: "tb-segment rv-pages" }, pages.map(([page, label]) => el("button", {
+        type: "button", class: state.page === page ? "active" : "", "aria-pressed": String(state.page === page),
+        onclick: () => { state.page = page; state.kind = "all"; render(); },
+      }, label))),
+      ...body,
     );
   }
 
