@@ -289,7 +289,7 @@
           <div>
             <p class="eyebrow">SOURCE-TRACEABLE STUDY LIBRARY</p>
             <h1>策略知识库</h1>
-            <p class="subhead">只收录官方公开免费内容；CASH 与 MTT 永不混用，每张结论都能回到原始来源。</p>
+            <p class="subhead">公开策略知识卡与有出处的教材笔记；CASH 与 MTT 分开学习，每张结论保留来源。</p>
           </div>
           <div class="knowledge-tally" aria-live="polite">
             <span><strong id="knowledge-card-count">—</strong> 已核验知识卡</span>
@@ -304,6 +304,7 @@
         <nav class="knowledge-tabs" aria-label="知识库页面">
           <button class="knowledge-tab active" type="button" data-kpage="library" aria-selected="true">策略知识卡</button>
           <button class="knowledge-tab" type="button" data-kpage="plo-textbook" aria-selected="false">奥马哈教材</button>
+          <button class="knowledge-tab" type="button" data-kpage="cash-textbook" aria-selected="false">现金桌教材</button>
         </nav>
 
         <div id="knowledge-library">
@@ -366,12 +367,17 @@
         <div id="plo-textbook" class="textbook" hidden>
           <p class="study-loading">正在读取奥马哈教材…</p>
         </div>
+        <div id="cash-textbook" class="textbook" hidden>
+          <p class="study-loading">正在读取现金桌教材…</p>
+        </div>
       </section>
     </main>
     <script src="static/static-api.js"></script>
     <script src="static/app.js"></script>
     <script src="static/plo-classifier.js"></script>
     <script src="static/plo-textbook.js"></script>
+    <script src="static/cash-math.js"></script>
+    <script src="static/cash-textbook.js"></script>
     <script src="static/plo-review.js"></script>
   </body>
 </html>

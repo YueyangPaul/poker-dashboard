@@ -4,7 +4,7 @@
   const config = Object.assign({ dataUrl: "/api/plo-textbook", standalone: false }, window.PLO_TEXTBOOK || {});
   const root = document.querySelector("#plo-textbook");
   const library = document.querySelector("#knowledge-library");
-  const tabs = document.querySelectorAll(".knowledge-tab");
+  const tabs = document.querySelectorAll("[data-kpage]");
   const state = { book: null, chapter: "guide", rangeKey: "top20", highlight: null, drillScores: {}, position: { scenario: "open", mine: 0, theirs: 0 } };
 
   function el(tag, attributes = {}, children = []) {
@@ -380,15 +380,18 @@
 
   function showPage(page) {
     const textbook = page === "plo-textbook";
-    library.hidden = textbook;
+    library.hidden = page !== "library";
     root.hidden = !textbook;
+    const cash = document.querySelector("#cash-textbook");
+    if (cash) cash.hidden = page !== "cash-textbook";
     tabs.forEach((tab) => {
       const active = tab.dataset.kpage === page;
       tab.classList.toggle("active", active);
       tab.setAttribute("aria-selected", String(active));
     });
     if (textbook) load();
-    if (location.hash !== (textbook ? "#plo-textbook" : "")) history.replaceState(null, "", textbook ? "#plo-textbook" : location.pathname);
+    const hash = page === "library" ? "" : `#${page}`;
+    if (location.hash !== hash) history.replaceState(null, "", hash || location.pathname);
   }
 
   if (config.standalone) {
