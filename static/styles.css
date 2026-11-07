@@ -552,3 +552,34 @@ span.nav-button { display: flex; align-items: center; }
   .cash-math-output { grid-template-columns:1fr; }
 }
 @media(max-width:900px) { #cash-textbook .tb-nav { max-height:none; overflow-y:hidden; } }
+
+/* Long-form cash lessons keep the course text open and the source diagrams close. */
+.cash-course-length { color:var(--green); font-size:.8rem; line-height:1.8; }
+.cash-course-toc { display:grid; gap:.5rem; }
+.cash-course-toc .quiet-button { margin:0; padding:.6rem .8rem; text-align:left; }
+.cash-prose { scroll-margin-top:80px; padding-top:1.7rem; }
+.cash-prose > h3 { font-family:"Songti SC","Iowan Old Style",serif; font-size:1.22rem; line-height:1.7; }
+.cash-prose h4 { margin:1.6rem 0 .7rem; color:var(--green); font-size:.94rem; line-height:1.7; }
+.cash-prose p { max-width:76ch; color:#cdd7d2; font-size:.92rem; line-height:2; margin:.75rem 0; overflow-wrap:anywhere; }
+.cash-ref { margin:0 .15rem; padding:.05rem .4rem; border-radius:999px; background:transparent; font-weight:400; vertical-align:baseline; }
+.cash-case-scene { padding:1rem; border-left:3px solid var(--orange); background:#15201c; font-size:.9rem; line-height:1.9; }
+.cash-case-analysis { padding:1rem 0; }
+.cash-case-analysis summary, .cash-original-pages > summary { cursor:pointer; color:var(--green); font-weight:650; line-height:1.8; }
+.cash-case-analysis li { margin:.7rem 0; line-height:1.9; font-size:.9rem; }
+.cash-original-pages { padding:1.2rem 0; border-top:1px solid var(--line); margin-bottom:1.4rem; }
+.cash-source-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.7rem; padding:.7rem 0; }
+.cash-source-controls input { width:5rem; padding:.5rem; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:4px; }
+.cash-source-controls label, .cash-source-controls a { font-size:.8rem; }
+.cash-source-controls a { color:var(--green); }
+.cash-source-image { display:block; width:100%; height:auto; background:white; border-radius:5px; }
+.cash-source-dialog { width:min(1050px,95vw); max-height:92vh; padding:1rem; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+.cash-source-dialog::backdrop { background:rgba(0,0,0,.8); }
+.cash-source-close { display:block; position:sticky; top:0; z-index:1; margin-left:auto; }
+.cash-teaching-table { font-size:.83rem; line-height:1.8; }
+.cash-teaching-table td { white-space:normal !important; min-width:100px; }
+.cash-teaching-table th { text-align:left; }
+@media(max-width:640px) {
+ .cash-prose p { font-size:.91rem; line-height:1.95; }
+ .cash-source-dialog { padding:.7rem; }
+ .cash-source-controls { gap:.5rem; }
+}
