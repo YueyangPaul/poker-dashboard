@@ -138,7 +138,7 @@
       title="多冒风险，是否换来了足够多的弃牌？";
       note="示意反应曲线，不是玩家池统计：底池100，按你设定的基础倾向与敏感程度计算各尺度弃牌率。纯诈唬被跟必输；坚果总领先，只比较额外支付，无加注。";
       let base=35,sensitivity=35,value=false;
-      const draw=()=>{const rows=[10,33,75,150,400].map(size=>{const f=Math.min(.99,Math.max(0,base/100+sensitivity/100*Math.log(1+size/100)));return {size,f,ev:value?(1-f)*size:f*100-(1-f)*size};});const best=rows.reduce((a,b)=>a.ev>b.ev?a:b);out.replaceChildren(...rows.map(r=>bar(`${r.size}% · 弃${(r.f*100).toFixed(0)}%`,r.ev,100)),el('p',{class:'lab-insight',text:`当前曲线下，这五个尺度中${best.size}%的${value?'额外价值':'纯诈唬EV'}最高，为 ${best.ev.toFixed(2)}。${value?'支付次数少，不一定比支付幅度小更差。':'最高也可能仍是负数，不能省略过牌这个选项。'} 曲线输入是假设，结论不能直接搬到真实手牌。`}));};
+      const draw=()=>{const rows=[10,33,75,150,400].map(size=>{const f=Math.min(.99,Math.max(0,base/100+sensitivity/100*Math.log(1+size/100)));return {size,f,ev:value?(1-f)*size:f*100-(1-f)*size};});const best=rows.reduce((a,b)=>a.ev>b.ev?a:b);out.replaceChildren(...rows.map(r=>bar(`${r.size}% · 弃${(r.f*100).toFixed(0)}%`,r.ev,Math.max(100,...rows.map(item=>item.ev)))),el('p',{class:'lab-insight',text:`当前曲线下，这五个尺度中${best.size}%的${value?'额外价值':'纯诈唬EV'}最高，为 ${best.ev.toFixed(2)}。${value?'支付次数少，不一定比支付幅度小更差。':'最高也可能仍是负数，不能省略过牌这个选项。'} 曲线输入是假设，结论不能直接搬到真实手牌。`}));};
       controls.append(el('button',{type:'button',class:'quiet-button',onclick:e=>{value=!value;e.target.textContent=value?'当前：坚果取值 · 点击切换':'当前：纯诈唬 · 点击切换';draw();}},'当前：纯诈唬 · 点击切换'));
       slider('基础弃牌倾向 %',0,80,base,v=>{base=v;draw();});slider('对尺度的敏感程度',0,60,sensitivity,v=>{sensitivity=v;draw();});draw();
     } else if(mode==="raise") {
