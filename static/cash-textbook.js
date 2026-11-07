@@ -15,47 +15,12 @@
     [].concat(children).filter((child) => child !== null).forEach((child) => node.append(child instanceof Node ? child : String(child)));
     return node;
   }
-  const ref = (pages) => el("button", { type: "button", class: "tb-ref cash-ref", title: "打开对应原页，查看牌面和图表", onclick: () => sourceModal(pages) }, `原页 ${pages[0] === pages[1] ? pages[0] : `${pages[0]}–${pages[1]}`} ↗`);
   const block = (title, children) => el("section", { class: "tb-block" }, [el("h3", { text: title }), ...[].concat(children)]);
-  const imageURL = (page) => new URL(`static/cash-source/page-${String(page).padStart(3, "0")}.jpg`, document.baseURI).href;
-  function sourceReader(range, start = range[0]) {
-    let page = start;
-    const image = el("img", { class: "cash-source-image", alt: "", loading: "lazy" });
-    const caption = el("p", { class: "tb-note", "aria-live": "polite" });
-    const input = el("input", { type: "number", min: range[0], max: range[1], value: page, "aria-label": "原页页码" });
-    const bigger = el("a", { target: "_blank", rel: "noopener noreferrer", text: "单独打开大图 ↗" });
-    const previous = el("button", { type: "button", onclick: () => draw(page - 1) }, "← 原页");
-    const next = el("button", { type: "button", onclick: () => draw(page + 1) }, "原页 →");
-    function draw(value) {
-      if (!Number.isInteger(Number(value)) || Number(value) < range[0] || Number(value) > range[1]) { input.value = page; return; }
-      page = Number(value); input.value = page;
-      image.src = imageURL(page); image.alt = `胡萝卜学校笔记上，PDF第${page}页`;
-      bigger.href = image.src;
-      caption.textContent = `PDF 第 ${page} 页${page > 3 ? ` · 印刷页 ${page - 3}` : ""} · 可浏览 ${range[0]}–${range[1]} 页；精确花色与图表以原页为准。`;
-      previous.disabled = page === range[0]; next.disabled = page === range[1];
-    }
-    input.addEventListener("change", () => draw(input.value));
-    draw(page);
-    return el("div", { class: "cash-source-reader" }, [el("div", { class: "cash-source-controls" }, [previous, el("label", {}, ["PDF页码 ", input]), next, bigger]), caption, image]);
-  }
-  function sourceModal(pages) {
-    const course = state.book.chapters.find((c) => c.sourcePages && c.sourcePages[0] <= pages[0] && c.sourcePages[1] >= pages[1]);
-    const dialog = el("dialog", { class: "cash-source-dialog", "aria-label": "教材原页对照" });
-    dialog.append(el("button", { type: "button", class: "cash-source-close", onclick: () => dialog.close() }, "关闭原页 ✕"), sourceReader(course ? course.sourcePages : pages, pages[0]));
-    dialog.addEventListener("close", () => dialog.remove());
-    document.body.append(dialog); dialog.showModal();
-  }
   function teachingTable(table) {
     return block(table.title, [el("div", { class: "table-wrap" }, el("table", { class: "cash-teaching-table" }, [
       el("thead", {}, el("tr", {}, table.columns.map((title) => el("th", { scope: "col", text: title })))),
       el("tbody", {}, table.rows.map((row) => el("tr", {}, row.map((text) => el("td", { text }))))),
-    ])), el("p", { class: "tb-note", text: table.note }), ref(table.pages)]);
-  }
-  function caseStudy(item) {
-    return block(`牌例精读 · ${item.title}`, [
-      el("p", { class: "cash-case-scene", text: item.situation }), el("p", { class: "tb-answer", text: `先想一想：${item.question}` }),
-      el("details", { class: "cash-case-analysis" }, [el("summary", { text: "展开推理与改法" }), el("ol", {}, item.analysis.map((text) => el("li", { text }))), el("p", { class: "tb-note", text: `迁移到实战：${item.transfer}` })]), ref(item.pages),
-    ]);
+    ])), el("p", { class: "tb-note", text: table.note }), null]);
   }
   function open(id) {
     state.chapter = id; state.query = ""; render();
@@ -94,7 +59,7 @@
       el("p", { class: "tb-note", text: "同一单位输入。无抽水、无加注、无后续下注；纯诈唬被跟时权益为零。过牌模型仅适用于 IP 河牌直接摊牌。" }),
       el("div", { class: "cash-inputs" }, [pLabel, bLabel, fLabel, sLabel, eLabel]),
       el("div", { class: "tb-samples" }, [33.333333, 50, 75, 100, 150].map((size) => el("button", { type: "button", class: "tb-chip", onclick: () => { b.value = Number(p.value) * size / 100; run(); } }, `${Math.round(size)}% 底池`))),
-      output, el("p", { class: "tb-source" }, ["公式对应教材：", ref([12,14]), " ", ref([196,198]), " ", ref([280,283]), " ", ref([309,310])]),
+      output,
     ]);
   }
   function quiz(drills) {
@@ -111,7 +76,7 @@
         feedback.textContent = state.answers[d.id] === undefined ? "选择后查看解析。" : `${state.answers[d.id] === d.answer ? "答对了。" : `再看一下：较佳答案是“${d.options[d.answer]}”。`} ${d.explanation}`;
       };
       draw();
-      return el("section", { class: "tb-block cash-quiz" }, [el("h3", { text: `${d.id} · ${d.question}` }), choices, feedback, ref(d.pages)]);
+      return el("section", { class: "tb-block cash-quiz" }, [el("h3", { text: `${d.id} · ${d.question}` }), choices, feedback, null]);
     });
     update();
     return [tally, ...cards, el("button", { type: "button", class: "quiet-button", onclick: () => { state.answers = {}; render(); } }, "重新练习")];
@@ -121,17 +86,102 @@
       el("summary", { text: `${rule.id} · ${rule.title}` }),
       el("p", {}, [el("strong", { text: "候选问题：" }), rule.signal]),
       el("p", {}, [el("strong", { text: "所需证据：" }), rule.evidence]),
-      el("p", { class: "tb-note", text: `${rule.scope}。${rule.verdict}。` }), ref(rule.pages),
+      el("p", { class: "tb-note", text: `${rule.scope}。${rule.verdict}。` }), null,
       el("button", { type: "button", class: "quiet-button", onclick: () => open(rule.chapter) }, "回到本课"),
     ]);
   }
+  function cards(values) {
+    return el("div", { class: "lab-cards" }, values.map(value => el("span", { class: `lab-card ${/[hd]$/.test(value) ? "red" : ""}` }, value.slice(0,-1) + {s:"♠",h:"♥",d:"♦",c:"♣"}[value.slice(-1)])));
+  }
+  function scenarioLab(lesson) {
+    let index = 0;
+    const scene = el("div");
+    const chooser = el("div", { class: "lab-segment" });
+    const draw = () => {
+      const item = lesson.examples[index];
+      chooser.replaceChildren(...lesson.examples.map((_,i) => el("button", { type:"button", "aria-pressed":String(index===i), onclick:()=>{index=i;draw();} }, i===0 ? "先做这个决定" : "换一个条件")));
+      const feedback=el("div", {class:"lab-feedback", "aria-live":"polite"});
+      const choices=el("div",{class:"lab-choices"});
+      choices.append(...item.options.map((option,i)=>el("button",{type:"button",class:"quiet-button",onclick:()=>{
+        choices.querySelectorAll('button').forEach((button,j)=>button.setAttribute('aria-pressed',String(j===i)));
+        feedback.replaceChildren(el("strong",{text:i===item.correct ? "这个思路更合适" : "试着换一个观察角度"}),el("p",{text:item.feedback}));
+      }},option)));
+      scene.replaceChildren(el("div",{class:"lab-table"},[el("small",{text:"教学情境 · 用来比较推理，不是精确求解结果"}),el("p",{text:"公共牌"}),cards(item.board),el("p",{text:"你的手牌"}),cards(item.hand)]),el("p",{class:"lab-scene",text:item.scene}),choices,feedback);
+    };
+    draw();return el("div",{class:"lab-scenario"},[chooser,scene]);
+  }
+  function experiment(mode) {
+    const controls=el("div",{class:"lab-controls"}); const out=el("div",{"aria-live":"polite"});
+    const slider=(label,min,max,value,change)=>{
+      const number=el("strong",{text:String(value)});
+      const input=el("input",{type:"range",min,max,value,"aria-label":label,oninput:e=>{number.textContent=e.target.value;change(Number(e.target.value));}});
+      controls.append(el("label",{},[el("span",{},[label," ",number]),input]));
+    };
+    const bar=(title,value,max=100)=>el("div",{class:"lab-bar-row"},[el("span",{text:title}),el("div",{class:"lab-bar-track"},el("i",{style:`width:${Math.min(100,Math.max(0,value/max*100))}%`})),el("strong",{text:value.toFixed(1)})]);
+    let title,note;
+    if(mode==="range") {
+      title="让一次行动，改变整个范围";
+      note="这里只示意强、中、弱三段如何重新分布；比例不是任何牌面的求解结果。留意“中间更密”和“强端更多”的区别。";
+      const states=[['尚未筛选',[25,45,30],'强中弱都存在，不能一看到过牌就删掉强端。'],['跟过一次下注',[20,65,15],'弱端被移走，中间更密：整体未必弱，强端却可能受限。'],['选择大额下注',[45,10,45],'中间变少，强牌和诈唬突出：这是极化，不是所有牌都变强。'],['选择随后过牌',[15,70,15],'部分强牌和空气都离开，中段更密：这是紧缩，仍保留一定强牌。']];
+      const draw=i=>{const [,values,reason]=states[i];out.replaceChildren(...values.map((v,j)=>bar(['强牌区域','中间区域','弱牌区域'][j],v)),el('p',{class:'lab-insight',text:reason}));controls.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));};
+      controls.append(...states.map(([name],i)=>el('button',{type:'button',class:'quiet-button',onclick:()=>draw(i)},name)));draw(0);
+    } else if(mode==="growth") {
+      title="三条街，底池会长到多大？";
+      note="双方都跟注的教学模型：起始底池20、剩余有效筹码100；每街按同一比例下注，投入不超过剩余筹码。先观察尺度，再考虑现实中哪些牌会支付。";
+      let size=50;const draw=()=>{let pot=20,stack=100;const rows=[];for(const street of ['翻牌','转牌','河牌']){const bet=Math.min(stack,pot*size/100);stack-=bet;pot+=2*bet;rows.push(bar(`${street}后底池`,pot,220));}out.replaceChildren(...rows,el('p',{class:'lab-insight',text:`剩余有效筹码 ${stack.toFixed(1)}。${stack===0?'已到投入上限；后续不能再加大。':'这就是等待或小注可能留下的未完成投入。'} 这只比较建池速度，不代表每手牌都该投入这么多。`}));};
+      slider('每街下注占底池 %',25,150,size,v=>{size=v;draw();});draw();
+    } else if(mode==="odds") {
+      title="价格变了，你的跟注门槛怎么变？";
+      note="河牌单挑、跟注后直接摊牌，无抽水和平分；胜率指对下注范围的胜率。早期街不能直接套用这个终局模型。";
+      let size=50,equity=30;const draw=()=>{const needed=size/(100+size*2)*100;const ev=equity/100*(100+size*2)-size;out.replaceChildren(bar('所需胜率 %',needed),bar('你估计的胜率 %',equity),el('p',{class:'lab-insight',text:`跟注EV ${ev.toFixed(2)}；弃牌EV为0。${ev>0?'在这些假设下，跟注更有利。':ev<0?'在这些假设下，弃牌更有利。':'刚好位于无差别点。'} 多数时候会输，并不能单独决定是否跟注。`}));};
+      slider('对手下注占底池 %',25,200,size,v=>{size=v;draw();});slider('对下注范围的胜率 %',0,100,equity,v=>{equity=v;draw();});draw();
+    } else if(mode==="value") {
+      title="被跟得多，和被跟时领先，是两回事";note="河牌终局模型：底池100、下注75，无加注和平分。独立调整被跟概率与被跟后胜率，观察总EV；实际两个输入常随尺度一起变化。";
+      let call=50,equity=40;const draw=()=>{const ev=(1-call/100)*100+call/100*(equity/100*250-75);out.replaceChildren(bar('被跟后胜率 %',equity),el('p',{class:'lab-insight',text:`下注总EV ${ev.toFixed(2)}。其中，被跟分支的净期望为 ${(equity/100*250-75).toFixed(2)}。下注总EV还包含弃牌收益，不能只因总数为正就称它为价值下注，更要与过牌比较。`}));};
+      slider('被跟概率 %',10,100,call,v=>{call=v;draw();});slider('被跟后的胜率 %',0,100,equity,v=>{equity=v;draw();});draw();
+    } else {
+      title="拖动弃牌率，看下注与过牌谁更赚";note="底池100、下注75；被跟时必输，无加注。过牌能直接摊牌，胜率可独立调整。负值表示从当前决策起亏损。";
+      let fold=57,showdown=34;const draw=()=>{const bet=fold/100*100-(1-fold/100)*75;out.replaceChildren(bar('下注EV',bet,100),bar('过牌EV',showdown,100),el('p',{class:'lab-insight',text:`下注 ${bet.toFixed(2)}，过牌 ${showdown.toFixed(2)}，差额 ${(bet-showdown).toFixed(2)}。${bet>showdown?'当前模型支持下注。':'当前模型更支持过牌。'} 改一改摊牌概率，看看结论何时翻转。`}));};
+      slider('对手弃牌率 %',0,100,fold,v=>{fold=v;draw();});slider('过牌赢池概率 %',0,100,showdown,v=>{showdown=v;draw();});draw();
+    }
+    return el('section',{class:'lab-experiment'},[el('h3',{text:title}),el('p',{class:'lab-model-note',text:note}),controls,out]);
+  }
+  function renderLesson(body,c) {
+    const l=c.learning;let stage=0;
+    const stageNav=el('nav',{class:'lab-stages','aria-label':'学习步骤'});const content=el('div',{class:'lab-stage-content'});
+    const draw=()=>{
+      stageNav.replaceChildren(...['讲透原理','动手实验','情境练习','知识详解'].map((name,i)=>el('button',{type:'button','aria-pressed':String(stage===i),onclick:()=>{stage=i;draw();}},`${i+1}. ${name}`)));
+      content.replaceChildren();
+      if(stage===0){
+        content.append(el('p',{class:'lab-lead',text:l.idea}),el('div',{class:'lab-explain-grid'},[block('为什么会这样',el('p',{text:l.why})),block('把它变成判断步骤',el('p',{text:l.method}))]),el('aside',{class:'lab-trap'},[el('strong',{text:'容易掉进去的坑'}),el('p',{text:l.trap})]),block('带着问题看这手牌',[scenarioLab(l)]));
+      } else if(stage===1)content.append(experiment(l.mode));
+      else if(stage===2)content.append(scenarioLab(l),...quiz(state.book.drills.filter(d=>d.chapter===c.id)));
+      else {
+        const select=el('select',{'aria-label':'选择深入主题'}); const detail=el('div',{class:'cash-prose'});
+        c.sections.forEach((section,i)=>select.append(el('option',{value:i,text:section.title.replace(/^第.+?章[ ·]*/, '')})));
+        const show=()=>{const s=c.sections[Number(select.value)];detail.replaceChildren(el('h3',{text:s.title.replace(/^第.+?章[ ·]*/, '')}),...s.points.map(p=>p.kind==='heading'?el('h4',{text:p.text.replace(/^第.+?节[ ·]*/, '')}):el('p',{text:p.text})));};
+        select.addEventListener('change',show);show();content.append(el('label',{class:'lab-topic'},['选择一个主题深入理解',select]),detail,...(c.tables||[]).map(teachingTable));
+      }
+      if(stage<3)content.append(el('button',{type:'button',class:'lab-next',onclick:()=>{stage++;draw();content.scrollIntoView({behavior:'smooth',block:'start'});}},['开始动手实验 →','换个情境检验 →','继续查看知识详解 →'][stage]));
+    };
+    body.append(el('p',{class:'lab-kicker',text:'理解一个问题，再把它用到牌桌上'}),stageNav,content);
+    draw();
+    const done=el('button',{type:'button',class:'quiet-button',onclick:()=>{
+      if(state.read.has(c.id))state.read.delete(c.id);else state.read.add(c.id);
+      try{localStorage.setItem('cash-textbook-read',JSON.stringify([...state.read]));}catch(_){}
+      done.textContent=state.read.has(c.id)?'✓ 已学完 · 点击取消':'标记本课已学完';
+    }},state.read.has(c.id)?'✓ 已学完 · 点击取消':'标记本课已学完');
+    const lessons=state.book.chapters.filter(c=>c.learning);const i=lessons.indexOf(c);
+    body.append(el('footer',{class:'lab-lesson-footer'},[done,i<lessons.length-1?el('button',{type:'button',onclick:()=>open(lessons[i+1].id)},'下一课 →'):el('span',{text:'已到最后一课，回练习页检验掌握情况。'})]));
+  }
+
   function renderBody(body) {
     const book = state.book;
     if (state.query) {
       const q = state.query.toLowerCase();
       const hits = book.chapters.filter((c) => JSON.stringify(c).toLowerCase().includes(q));
       body.replaceChildren(el("h2", { text: `查找“${state.query}” · ${hits.length} 章` }), ...hits.map((c) => block(c.title, [
-        el("p", { text: c.intro }), ...c.sections.flatMap((s) => s.points.filter((p) => p.text.toLowerCase().includes(q)).map((p) => el("p", {}, [p.text, " ", ref(p.pages)]))),
+        el("p", { text: c.intro }), ...c.sections.flatMap((s) => s.points.filter((p) => p.text.toLowerCase().includes(q)).map((p) => el("p", {}, [p.text, " ", null]))),
         el("button", { type: "button", class: "quiet-button", onclick: () => open(c.id) }, "阅读本章"),
       ])));
       if (!hits.length) body.append(el("p", { text: "没有匹配章节，可试试“阻挡”“紧缩”或“跟注”。" }));
@@ -139,40 +189,20 @@
     }
     const index = book.chapters.findIndex((c) => c.id === state.chapter);
     const c = book.chapters[index];
-    body.replaceChildren(el("p", { class: "eyebrow", text: c.grade ? `YEAR ${c.grade} / CASH STUDY` : "STUDY DESK" }), el("h2", { text: c.title }), el("p", { class: "tb-intro", text: c.intro }));
-    if (c.grade) {
-      body.append(el("p", { class: "cash-course-length", text: `本课 ${c.sections.length} 章 · ${c.readingChars.toLocaleString("zh-CN")} 字正文 · 配套牌例与原页图表` }));
-      body.append(block("本课内容", el("nav", { class: "cash-course-toc", "aria-label": "本课章节" }, c.sections.map((section, i) => el("button", { type: "button", class: "quiet-button", onclick: () => body.querySelector(`#cash-unit-${i}`).scrollIntoView({ behavior: "smooth", block: "start" }) }, section.title)))));
-    }
+    body.replaceChildren(el("p", { class: "eyebrow", text: c.grade ? `YEAR ${c.grade} / CASH STUDY` : "STUDY DESK" }), el("h2", { text: c.title }), el("p", { class: "tb-intro", text: c.learning ? c.learning.question : "选择一个问题，开始练习。" }));
+    if (c.grade) { renderLesson(body, c); return; }
     c.sections.forEach((section, i) => {
       const content = c.grade ? section.points.map((p) => p.kind === "heading"
-        ? el("h4", { text: p.text }) : el("p", {}, [p.text, " ", ref(p.pages)]))
-        : [el("ul", { class: "tb-points" }, section.points.map((p) => el("li", {}, [p.text, " ", ref(p.pages)])))];
+        ? el("h4", { text: p.text }) : el("p", {}, [p.text, " ", null]))
+        : [el("ul", { class: "tb-points" }, section.points.map((p) => el("li", {}, [p.text, " ", null])))];
       const node = block(section.title, content); node.id = `cash-unit-${i}`;
       if (c.grade) node.classList.add("cash-prose");
       body.append(node);
     });
-    if (c.grade) {
-      (c.tables || []).forEach((table) => body.append(teachingTable(table)));
-      (c.caseStudies || []).forEach((item) => body.append(caseStudy(item)));
-      const original = el("details", { class: "cash-original-pages" }, [el("summary", { text: `本课原页与全部图表 · PDF ${c.sourcePages[0]}–${c.sourcePages[1]} 页` })]);
-      original.addEventListener("toggle", () => { if (original.open && original.children.length === 1) original.append(sourceReader(c.sourcePages)); });
-      body.append(original);
-    }
-    if (c.id === "guide") body.append(block("按问题找课", el("div", { class: "cash-route-grid" }, [
-      ["下注还是过牌？", "value"], ["转牌还要开火吗？", "barrel"], ["河牌到底跟不跟？", "river"], ["面对小注如何反击？", "checkraise"], ["先算价格与收益", "tools"], ["检查自己的推理", "practice"],
-    ].map(([title, id]) => el("button", { type: "button", class: "quiet-button", onclick: () => open(id) }, title)))), block("课程内容与原页对照", [el("p", { text: book.meta.coverage }), el("p", { class: "cash-course-length", text: `${book.meta.section_count} 个课程章 · 20 个牌例精读 · ${book.meta.table_count} 张教学表 · 约 ${(book.meta.prose_characters / 10000).toFixed(1)} 万字正文` }), el("p", { class: "tb-note", text: `来源：${book.meta.source}，${book.meta.pdf_pages} 页。各课正文直接展开阅读；点击页码可查看原页、精确花色和图表，课末还可逐页翻阅。` })]));
+    if (c.id === "guide") body.append(block("从你的困惑开始", el("div", { class: "cash-route-grid" }, book.chapters.filter(c => c.learning).map(c => el("button", { type: "button", class: "quiet-button", onclick: () => open(c.id) }, c.learning.question)))));
     if (c.id === "tools") body.append(tools());
     if (c.id === "practice") body.append(...quiz(book.drills));
     if (c.id === "review") body.append(block("复盘步骤", [el("p", { text: "核对完整牌谱 → 匹配位置、筹码、抽水与行动线 → 引用规则及页码 → 解释更好的替代行动 → 按重复模式聚合。" }), el("p", { class: "tb-note", text: "标签使用：符合教材原则 / 候选漏洞 / 有依据的剥削偏离 / 证据不足。数据库不保留完整翻后牌谱，翻后判断需要原始记录；未摊牌也可评估决策理由，不能编造对手底牌。" })]), ...book.rules.map(ruleCard));
-    if (c.grade) {
-      const button = el("button", { type: "button", class: "quiet-button", "aria-pressed": String(state.read.has(c.id)), onclick: () => {
-        if (state.read.has(c.id)) state.read.delete(c.id); else state.read.add(c.id);
-        try { localStorage.setItem("cash-textbook-read", JSON.stringify([...state.read])); } catch (_) { /* Optional local progress. */ }
-        render();
-      } }, state.read.has(c.id) ? "✓ 已读 · 点击取消" : "标记本课已读");
-      body.append(button, ...quiz(book.drills.filter((d) => d.chapter === c.id)));
-    }
     body.append(el("div", { class: "tb-pager" }, [index > 0 ? el("button", { type: "button", class: "quiet-button", onclick: () => open(book.chapters[index - 1].id) }, "← 上一章") : el("span"), index < book.chapters.length - 1 ? el("button", { type: "button", onclick: () => open(book.chapters[index + 1].id) }, "下一章 →") : el("span")]));
   }
   function render() {
@@ -180,7 +210,7 @@
     const body = el("article", { class: "tb-content panel" });
     const search = el("input", { type: "search", placeholder: "搜索章节与原则，例如：阻挡、超池、跟注", "aria-label": "搜索现金桌教材", value: state.query, oninput: (event) => { state.query = event.target.value.trim(); renderBody(body); } });
     const count = book.chapters.filter((c) => c.grade && state.read.has(c.id)).length;
-    root.replaceChildren(el("header", { class: "tb-header" }, [el("div", {}, [el("p", { class: "eyebrow", text: "NLHE CASH / CARROT STUDY NOTES" }), el("h2", { text: book.meta.title }), el("p", { class: "subhead", text: book.meta.subtitle })]), el("p", { class: "tb-disclaimer", text: book.meta.disclaimer })]), el("div", { class: "cash-study-toolbar" }, [search, el("span", { text: `已读 ${count}/20 课 · 进度保存在此浏览器` })]), el("div", { class: "tb-layout" }, [el("nav", { class: "tb-nav", "aria-label": "现金桌教材章节" }, book.chapters.map((c) => el("button", { type: "button", class: c.id === state.chapter ? "active" : "", "aria-current": c.id === state.chapter ? "page" : "false", onclick: () => open(c.id) }, `${state.read.has(c.id) ? "✓ " : ""}${c.title}`))), body]));
+    root.replaceChildren(el("header", { class: "tb-header" }, [el("div", {}, [el("p", { class: "eyebrow", text: "NLHE CASH / CARROT STUDY NOTES" }), el("h2", { text: book.meta.title }), el("p", { class: "subhead", text: book.meta.subtitle })]), null]), el("div", { class: "cash-study-toolbar" }, [search, el("span", { text: `已读 ${count}/20 课 · 进度保存在此浏览器` })]), el("div", { class: "tb-layout" }, [el("nav", { class: "tb-nav", "aria-label": "现金桌教材章节" }, book.chapters.map((c) => el("button", { type: "button", class: c.id === state.chapter ? "active" : "", "aria-current": c.id === state.chapter ? "page" : "false", onclick: () => open(c.id) }, `${state.read.has(c.id) ? "✓ " : ""}${c.title}`))), body]));
     renderBody(body);
   }
   async function load() {

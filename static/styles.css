@@ -561,20 +561,6 @@ span.nav-button { display: flex; align-items: center; }
 .cash-prose > h3 { font-family:"Songti SC","Iowan Old Style",serif; font-size:1.22rem; line-height:1.7; }
 .cash-prose h4 { margin:1.6rem 0 .7rem; color:var(--green); font-size:.94rem; line-height:1.7; }
 .cash-prose p { max-width:76ch; color:#cdd7d2; font-size:.92rem; line-height:2; margin:.75rem 0; overflow-wrap:anywhere; }
-.cash-ref { margin:0 .15rem; padding:.05rem .4rem; border-radius:999px; background:transparent; font-weight:400; vertical-align:baseline; }
-.cash-case-scene { padding:1rem; border-left:3px solid var(--orange); background:#15201c; font-size:.9rem; line-height:1.9; }
-.cash-case-analysis { padding:1rem 0; }
-.cash-case-analysis summary, .cash-original-pages > summary { cursor:pointer; color:var(--green); font-weight:650; line-height:1.8; }
-.cash-case-analysis li { margin:.7rem 0; line-height:1.9; font-size:.9rem; }
-.cash-original-pages { padding:1.2rem 0; border-top:1px solid var(--line); margin-bottom:1.4rem; }
-.cash-source-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.7rem; padding:.7rem 0; }
-.cash-source-controls input { width:5rem; padding:.5rem; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:4px; }
-.cash-source-controls label, .cash-source-controls a { font-size:.8rem; }
-.cash-source-controls a { color:var(--green); }
-.cash-source-image { display:block; width:100%; height:auto; background:white; border-radius:5px; }
-.cash-source-dialog { width:min(1050px,95vw); max-height:92vh; padding:1rem; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:12px; }
-.cash-source-dialog::backdrop { background:rgba(0,0,0,.8); }
-.cash-source-close { display:block; position:sticky; top:0; z-index:1; margin-left:auto; }
 .cash-teaching-table { font-size:.83rem; line-height:1.8; }
 .cash-teaching-table td { white-space:normal !important; min-width:100px; }
 .cash-teaching-table th { text-align:left; }
@@ -582,4 +568,59 @@ span.nav-button { display: flex; align-items: center; }
  .cash-prose p { font-size:.91rem; line-height:1.95; }
  .cash-source-dialog { padding:.7rem; }
  .cash-source-controls { gap:.5rem; }
+}
+
+/* Interactive cash classroom: a focused lesson, not an annotated transcript. */
+.lab-kicker { color:var(--muted); font-size:.78rem; }
+.lab-stages { display:flex; gap:4px; padding:5px; margin:20px 0 28px; background:#080f0e; border:1px solid var(--line); border-radius:8px; }
+.lab-stages button { flex:1; background:transparent; color:var(--muted); font-size:.8rem; padding:12px 8px; }
+.lab-stages button[aria-pressed="true"] { background:#223c30; color:var(--green); }
+.lab-lead { max-width:65ch; font-family:"Songti SC",serif; font-size:1.2rem; line-height:1.9; }
+.lab-explain-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:20px 0; }
+.lab-explain-grid p { color:#b9c9c0; font-size:.9rem; line-height:1.95; }
+.lab-trap { border-left:3px solid var(--orange); padding:15px 20px; background:#231e14; margin:20px 0 32px; }
+.lab-trap strong { color:var(--orange); font-size:.8rem; }
+.lab-trap p { margin:8px 0 0; font-size:.9rem; line-height:1.8; }
+.lab-segment { display:flex; gap:8px; margin-bottom:16px; }
+.lab-segment button { background:transparent; color:var(--muted); border:1px solid var(--line); }
+.lab-segment button[aria-pressed="true"] { border-color:var(--green); color:var(--green); }
+.lab-table { padding:24px; background:radial-gradient(ellipse at center,#174834,#0e261e); border:1px solid #2b6148; border-radius:16px; text-align:center; }
+.lab-table small { color:#a0b9a8; font-size:.68rem; }
+.lab-table p { font-size:.7rem; color:#a6bcb0; margin:18px 0 9px; }
+.lab-cards { display:flex; gap:8px; justify-content:center; }
+.lab-card { display:grid; place-items:center; width:49px; height:65px; border-radius:6px; background:#f3f0e5; color:#1b2724; font-size:1.4rem; font-weight:750; box-shadow:0 3px 8px #071a12; }
+.lab-card.red { color:#b13c3c; }
+.lab-scene { font-size:.95rem; line-height:1.9; padding:10px 0; }
+.lab-choices { display:flex; gap:10px; flex-wrap:wrap; }
+.lab-choices .quiet-button { margin:0; flex:1; white-space:normal; text-align:left; padding:14px; }
+.lab-choices button[aria-pressed="true"] { border-color:var(--green); color:var(--green); }
+.lab-feedback:not(:empty) { margin-top:16px; padding:20px; border:1px solid #355a42; background:#12251a; border-radius:8px; }
+.lab-feedback strong { color:var(--green); }
+.lab-feedback p { line-height:1.9; margin-bottom:0; font-size:.9rem; }
+.lab-next { display:block; margin:28px 0 0 auto; }
+.lab-lesson-footer { display:flex; justify-content:space-between; gap:12px; margin-top:32px; padding-top:20px; border-top:1px solid var(--line); }
+.lab-lesson-footer .quiet-button { margin:0; }
+.lab-controls { display:flex; flex-wrap:wrap; gap:12px; margin:24px 0; }
+.lab-controls label { display:grid; gap:12px; flex:1 1 220px; font-size:.85rem; }
+.lab-controls label strong { color:var(--green); }
+.lab-controls input[type="range"] { width:100%; accent-color:var(--green); cursor:pointer; }
+.lab-controls button[aria-pressed="true"] { border-color:var(--green); color:var(--green); }
+.lab-model-note { color:var(--muted); font-size:.78rem; line-height:1.85; }
+.lab-bar-row { display:grid; grid-template-columns:120px minmax(0,1fr) 55px; gap:12px; align-items:center; margin:20px 0; font-size:.8rem; }
+.lab-bar-row strong { text-align:right; }
+.lab-bar-track { background:#293732; height:12px; border-radius:9px; overflow:hidden; }
+.lab-bar-track i { display:block; height:100%; background:var(--green); transition:width .15s; }
+.lab-insight { padding:20px; background:#15241c; border-left:3px solid var(--green); line-height:1.9; font-size:.9rem; }
+.lab-topic { display:grid; gap:10px; font-size:.8rem; color:var(--muted); margin:20px 0; }
+.lab-topic select { max-width:100%; padding:12px; }
+@media(max-width:640px) {
+ .lab-stages { flex-wrap:wrap; }
+ .lab-stages button { flex:1 1 40%; }
+ .lab-explain-grid { grid-template-columns:1fr; gap:0; }
+ .lab-lead { font-size:1.08rem; }
+ .lab-card { width:42px; height:57px; font-size:1.2rem; }
+ .lab-table { padding:18px 8px; }
+ .lab-choices { flex-direction:column; }
+ .lab-bar-row { grid-template-columns:94px minmax(0,1fr) 44px; gap:8px; font-size:.72rem; }
+ .lab-lesson-footer { flex-direction:column; }
 }
