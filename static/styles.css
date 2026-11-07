@@ -624,3 +624,6 @@ span.nav-button { display: flex; align-items: center; }
  .lab-bar-row { grid-template-columns:94px minmax(0,1fr) 44px; gap:8px; font-size:.72rem; }
  .lab-lesson-footer { flex-direction:column; }
 }
+
+.cash-study-toolbar select { max-width:230px; min-width:180px; padding:12px; border:1px solid var(--line); border-radius:6px; background:#0d1716; color:var(--text); }
+@media(max-width:640px) { .cash-study-toolbar select { width:100%; max-width:none; } }
