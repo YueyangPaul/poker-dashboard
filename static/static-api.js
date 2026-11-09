@@ -29,6 +29,7 @@
     return json(await load(`${path}.json`));
   };
   document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".knowledge-actions")?.remove();
     document.querySelectorAll("#from-filter, #to-filter").forEach((input) => { input.disabled = true; input.title = "公开快照不支持按日期筛选"; });
     const badge = document.querySelector(".local-badge");
     if (badge) badge.textContent = "只读公开快照";
